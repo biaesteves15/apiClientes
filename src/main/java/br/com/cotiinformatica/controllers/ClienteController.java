@@ -33,9 +33,14 @@ public class ClienteController {
 		cliente.setEmail(request.getEmail());
 
 		var clienteRepository = new ClienteRepository();
-		clienteRepository.create(cliente);
 
-		return "Cliente cadastrado com sucesso.";
+		if (!clienteRepository.isExists(cliente.getCpf(), cliente.getId())) {
+
+			clienteRepository.create(cliente);
+			return "Cliente cadastrado com sucesso.";
+		} else {
+			return "O CPF '" + cliente.getCpf() + "' informado já está cadastrado para outro cliente. Tente novamente.";
+		}
 	}
 
 	@PutMapping("{id}")
@@ -52,14 +57,17 @@ public class ClienteController {
 			cliente.setTelefone(request.getTelefone());
 			cliente.setEmail(request.getEmail());
 
-			clienteRepository.update(cliente);
+			if (!clienteRepository.isExists(cliente.getCpf(), cliente.getId())) {
+				clienteRepository.update(cliente);
+				return "Cliente atualizado com sucesso.";
+			} else {
+				return "Não é possível atualizar os dados, pois o CPF '"+ cliente.getCpf() +"' já pertence a outro cliente";
 
-			return "Cliente atualizado com sucesso.";
-		} else {
-
+			}
+		}
+		else {
 			return "Cliente não encontrado. Verifique o ID informado.";
 		}
-
 	}
 
 	@DeleteMapping("{id}")
@@ -75,7 +83,7 @@ public class ClienteController {
 			return "Cliente excluído com sucesso.";
 
 		} else {
-			
+
 			return "Cliente não encontrado. Verifique o ID informado.";
 		}
 
@@ -87,5 +95,13 @@ public class ClienteController {
 		var clienteRepository = new ClienteRepository();
 
 		return clienteRepository.getAll();
+	}
+	
+	@GetMapping("{id}")
+	public Cliente getById(@PathVariable UUID id) throws Exception{
+		
+		var clienteRepository = new ClienteRepository();
+		
+		return clienteRepository.getById(id);
 	}
 }
